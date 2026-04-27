@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title id="pageTitle">ElevenLabs STT v1.9.0</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0b0e;--bg2:#111318;--bg3:#181b22;--bg4:#1e2230;--border:#252a38;--border2:#2e3548;--accent:#6c63ff;--accent2:#8b5cf6;--accent-glow:rgba(108,99,255,0.15);--text:#e8eaf0;--text2:#9ba3b8;--text3:#6b7494;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--info:#38bdf8;}
+html.light{--bg:#f0f2f7;--bg2:#ffffff;--bg3:#f5f7fb;--bg4:#e8ecf4;--border:#d1d8e8;--border2:#bcc5da;--accent:#5b52e8;--accent2:#7c3aed;--accent-glow:rgba(91,82,232,0.12);--text:#1a1d2e;--text2:#4a5068;--text3:#7b84a0;--success:#16a34a;--warning:#d97706;--danger:#dc2626;--info:#0284c7;}
+html,body{height:100%;overflow:hidden;}body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
+.pw-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.pw-box{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:36px 40px;width:340px;box-shadow:0 32px 80px rgba(0,0,0,0.7);animation:modalIn 0.25s ease;display:flex;flex-direction:column;gap:16px;align-items:center;}
+.pw-logo{width:48px;height:48px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;}
+.pw-title{font-size:15px;font-weight:700;color:var(--text);text-align:center;}
+.pw-sub{font-size:12px;color:var(--text3);text-align:center;margin-top:-8px;}
+.pw-input-wrap{width:100%;}
+.pw-input-wrap input{width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:10px 14px;font-size:15px;font-family:inherit;outline:none;letter-spacing:3px;transition:border-color 0.2s,box-shadow 0.2s;}
+.pw-input-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+.pw-error{font-size:12px;color:var(--danger);text-align:center;min-height:14px;}
+.pw-btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;padding:11px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.2s,transform 0.1s;}
+.pw-btn:hover{opacity:0.88;}.pw-btn:active{transform:scale(0.98);}
+@keyframes pwShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-6px);}80%{transform:translateX(6px);}}
+@keyframes modalIn{from{transform:scale(0.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes modalPop{from{transform:scale(0.95);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}@keyframes spin{to{transform:rotate(360deg);}}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;flex-shrink:0;z-index:100;box-shadow:0 4px 24px rgba(0,0,0,0.4);}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:10px 0;gap:12px;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.logo h1{font-size:18px;font-weight:700;letter-spacing:-0.3px;background:linear-gradient(135deg,var(--text),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;}
+.version{font-size:10px;font-weight:700;color:var(--text3);background:var(--bg4);border:1px solid var(--border2);border-radius:4px;padding:2px 7px;letter-spacing:0.5px;-webkit-text-fill-color:var(--text3);font-family:monospace;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.btn-sm{background:var(--bg3);border:1px solid var(--border2);color:var(--text3);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;letter-spacing:0.4px;display:flex;align-items:center;gap:5px;transition:all 0.2s;white-space:nowrap;}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
+
+.logout-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text3);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;gap:5px;transition:all 0.2s;white-space:nowrap;}
+.logout-btn:hover{border-color:var(--danger);color:var(--danger);background:rgba(239,68,68,0.07);}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:14px 24px;gap:11px;}
+.drop-zone{border:2px dashed var(--border2);border-radius:12px;background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 20px;gap:5px;cursor:pointer;transition:all 0.2s;flex-shrink:0;position:relative;}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:var(--accent-glow);}
+.drop-zone input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;}
+.drop-icon{font-size:22px;}.drop-title{font-size:13px;font-weight:700;color:var(--text);}.drop-sub{font-size:11px;color:var(--text3);}
+.toolbar{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;flex-wrap:wrap;}
+.toolbar-left{display:flex;align-items:center;gap:6px;}.toolbar-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);}
+.btn{padding:6px 13px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:700;transition:all 0.2s;display:flex;align-items:center;gap:5px;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 2px 10px rgba(108,99,255,0.3);}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px);}.btn-primary:disabled{opacity:0.4;pointer-events:none;transform:none;}
+.btn-ghost{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);}.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}.btn-ghost:disabled{opacity:0.35;pointer-events:none;}
+.btn-success{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:var(--success);}.btn-success:hover{background:rgba(34,197,94,0.22);}.btn-success:disabled{opacity:0.35;pointer-events:none;}
+.btn-warn{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:var(--warning);}.btn-warn:hover{background:rgba(245,158,11,0.22);}.btn-warn:disabled{opacity:0.35;pointer-events:none;}
+.file-list-wrap{flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:10px;background:var(--bg2);}
+.file-list-wrap::-webkit-scrollbar{width:5px;}.file-list-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+.file-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:40px 20px;color:var(--text3);font-size:13px;}.file-empty-icon{font-size:28px;}
+.file-table{width:100%;border-collapse:collapse;}
+.file-table th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text3);padding:8px 9px;border-bottom:1px solid var(--border);text-align:left;background:var(--bg3);position:sticky;top:0;z-index:2;white-space:nowrap;}
+.file-table td{padding:7px 9px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle;}
+.file-table tr:last-child td{border-bottom:none;}.file-table tr:hover td{background:var(--bg3);}.file-table tr.row-sel td{background:rgba(108,99,255,0.07);}
+.file-name{font-weight:600;color:var(--text);max-width:155px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-meta{color:var(--text3);font-size:11px;font-family:monospace;}
+.lang-tag{display:inline-flex;background:rgba(56,189,248,0.12);color:var(--info);border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700;}
+.model-tag{display:inline-flex;background:rgba(108,99,255,0.12);color:var(--accent);border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;}
+.badge-pending{background:rgba(107,116,148,0.15);color:var(--text3);}.badge-processing{background:rgba(56,189,248,0.15);color:var(--info);}
+.badge-done{background:rgba(34,197,94,0.15);color:var(--success);}.badge-error{background:rgba(239,68,68,0.15);color:var(--danger);}
+.spin{display:inline-block;animation:spin 1s linear infinite;}
+input[type=checkbox].row-check{width:14px;height:14px;cursor:pointer;accent-color:var(--accent);}
+.row-actions{display:flex;gap:3px;flex-wrap:wrap;}
+.row-btn{background:var(--bg4);border:1px solid var(--border2);color:var(--text3);padding:3px 6px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.row-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
+.row-btn.play:hover{border-color:var(--success);color:var(--success);background:rgba(34,197,94,0.1);}
+.row-btn.dl:hover{border-color:var(--info);color:var(--info);background:rgba(56,189,248,0.1);}
+.row-btn.docx-b:hover{border-color:#3b82f6;color:#3b82f6;background:rgba(59,130,246,0.1);}
+.row-btn.pdf-b:hover{border-color:var(--danger);color:var(--danger);background:rgba(239,68,68,0.1);}
+.row-btn.rm:hover{border-color:var(--danger);color:var(--danger);background:rgba(239,68,68,0.1);}
+.row-btn:disabled{opacity:0.3;pointer-events:none;}
+.prog-wrap{background:var(--bg4);border-radius:3px;height:5px;overflow:hidden;width:70px;}
+.prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--info));transition:width 0.3s ease;}
+#toastContainer{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:8000;pointer-events:none;}
+#statusPanel{position:fixed;bottom:24px;right:24px;z-index:8100;width:min(360px,90vw);background:var(--bg2);border:1px solid var(--border2);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.45);padding:14px 16px;display:none;flex-direction:column;gap:9px;animation:slideIn 0.22s ease;}
+.sp-title{font-size:13px;font-weight:700;color:var(--text);}
+.sp-sub{font-size:12px;color:var(--text3);min-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-bar-wrap{background:var(--bg4);border-radius:4px;height:5px;overflow:hidden;}
+.sp-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--info));width:0%;transition:width 0.3s ease;}
+.sp-done{font-size:12px;font-weight:700;}.sp-done.success{color:var(--success);}.sp-done.warning{color:var(--warning);}.sp-done.error{color:var(--danger);}
+.toast{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,0.4);animation:slideIn 0.25s ease;pointer-events:auto;max-width:360px;}
+.toast.success{border-color:var(--success);color:var(--success);}.toast.error{border-color:var(--danger);color:var(--danger);}.toast.info{border-color:var(--info);color:var(--info);}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease;}
+.modal-close{background:var(--bg3);border:1px solid var(--border2);color:var(--text3);border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}.modal-close:hover{border-color:var(--danger);color:var(--danger);}
+.config-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:min(520px,95vw);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6);animation:modalPop 0.2s ease;}
+.config-header{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border);}.config-title{font-size:15px;font-weight:700;color:var(--text);}
+.config-body{padding:17px 20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;max-height:calc(85vh - 115px);}
+.config-body::-webkit-scrollbar{width:5px;}.config-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+/* Speaker colors — also used by PDF export */
+.spk-color-0{color:#6c63ff;} .spk-color-1{color:#22c55e;} .spk-color-2{color:#f59e0b;} .spk-color-3{color:#ef4444;}
+.spk-color-4{color:#38bdf8;} .spk-color-5{color:#a78bfa;} .spk-color-6{color:#fb923c;} .spk-color-7{color:#34d399;}
+
+/* Audio player — from conversations app */
+.audio-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 2000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px 16px;
+    overflow-y: auto;
+  }
+  .audio-modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 0;
+    width: 100%;
+    max-width: 620px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 56px);
+    overflow: hidden;
+  }
+  .audio-modal-top {
+    padding: 20px 22px 16px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .audio-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .audio-modal-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .audio-modal-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 3px;
+  }
+  .audio-modal-close {
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 4px;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .audio-modal-close:hover { color: var(--text); }
+
+  /* Timeline */
+  .audio-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .audio-time-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text3);
+    font-variant-numeric: tabular-nums;
+  }
+  /* Timeline track — tall enough for thumb, overflow hidden prevents bleed */
+  .audio-timeline-track {
+    position: relative;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  .audio-timeline-bg {
+    position: absolute;
+    left: 0; right: 0;
+    height: 4px;
+    background: var(--bg4);
+    border-radius: 2px;
+  }
+  .audio-timeline-fill {
+    position: absolute;
+    left: 0;
+    height: 4px;
+    width: 0%;
+    max-width: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .audio-slider {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+  }
+
+  /* Controls */
+  .audio-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .audio-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    min-width: 42px;
+    height: 38px;
+  }
+  .audio-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+  .audio-btn.primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border-color: transparent;
+    min-width: 52px;
+  }
+  .audio-btn.primary:hover { opacity: 0.85; }
+  .audio-volume-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .audio-volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 72px;
+    height: 3px;
+    background: var(--bg4);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .audio-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text2);
+    cursor: pointer;
+  }
+  .audio-volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text2);
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Summary section — fixed below player, does NOT scroll with transcript */
+  .audio-summary {
+    flex-shrink: 0;
+    max-height: 140px;
+    overflow-y: auto;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  .audio-summary::-webkit-scrollbar { width: 4px; }
+  .audio-summary::-webkit-scrollbar-track { background: transparent; }
+  .audio-summary::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .audio-summary-heading {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .audio-summary-text {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+  .audio-summary-empty {
+    font-size: 12px;
+    color: var(--text3);
+    font-style: italic;
+  }
+
+  /* Transcript chat area — scrollable, fills remaining space */
+  .audio-transcript {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;  /* critical: allows flex child to shrink below content size */
+  }
+  .audio-transcript::-webkit-scrollbar { width: 4px; }
+  .audio-transcript::-webkit-scrollbar-track { background: var(--bg3); border-radius: 2px; }
+  .audio-transcript::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .audio-transcript-heading {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text3);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2px;
+    flex-shrink: 0;
+  }
+  .chat-bubble-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-bubble-wrap.agent-wrap { align-items: flex-start; }
+  .chat-bubble-wrap.user-wrap  { align-items: flex-end; }
+  .chat-bubble-wrap.tool-wrap  { align-items: center; }
+  .chat-bubble {
+    max-width: 82%;
+    padding: 9px 13px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .chat-bubble:hover { opacity: 0.85; }
+  /* Agent — left, slate */
+  .chat-bubble.agent {
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    border-bottom-left-radius: 3px;
+  }
+  /* User/Caller — right, accent purple */
+  .chat-bubble.user {
+    background: var(--accent-glow);
+    border: 1px solid rgba(108, 99, 255, 0.3);
+    color: var(--text);
+    border-bottom-right-radius: 3px;
+  }
+  /* Tool call — centered, amber tint */
+  .chat-bubble.tool-call {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    color: var(--text2);
+    max-width: 92%;
+    width: 92%;
+    border-radius: 8px;
+    cursor: default;
+  }
+  .chat-bubble.tool-call:hover { opacity: 1; }
+  /* Tool result — centered, green tint */
+  .chat-bubble.tool-result {
+    background: rgba(34, 197, 94, 0.07);
+    border: 1px solid rgba(34, 197, 94, 0.22);
+    color: var(--text2);
+    max-width: 92%;
+    width: 92%;
+    border-radius: 8px;
+    cursor: default;
+  }
+  .chat-bubble.tool-result:hover { opacity: 1; }
+  .chat-role {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 3px;
+    color: var(--text3);
+  }
+  .chat-bubble.user .chat-role  { color: var(--accent); }
+  .chat-bubble.tool-call .chat-role   { color: var(--warning); }
+  .chat-bubble.tool-result .chat-role { color: var(--success); }
+  .tool-name {
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .tool-body {
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    color: var(--text3);
+    background: var(--bg);
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin-top: 4px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  .chat-time {
+    font-size: 10px;
+    color: var(--text3);
+    opacity: 0.6;
+    margin-top: 4px;
+  }
+  .chat-bubble-wrap.agent-wrap .chat-time { text-align: left; }
+  .chat-bubble-wrap.user-wrap  .chat-time { text-align: right; }
+  .chat-bubble-wrap.tool-wrap  .chat-time { text-align: center; }
+  /* Active/highlighted bubble during playback */
+  .chat-bubble.active-bubble {
+    outline: 2px solid var(--accent);
+    opacity: 1 !important;
+  }
+
+
+
+.sm-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:min(460px,95vw);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6);animation:modalPop 0.2s ease;}
+.sm-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);}
+.sm-title{font-size:14px;font-weight:700;color:var(--text);}
+.sm-body{padding:16px 20px;display:flex;flex-direction:column;gap:12px;}
+.sm-input{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:9px 12px;border-radius:7px;font-size:13px;outline:none;width:100%;transition:border-color 0.2s;}
+.sm-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+.sm-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.sm-desc{font-size:12px;color:var(--text3);line-height:1.55;}
+.sm-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:6px;}
+.dl-fmt-row{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);cursor:pointer;font-size:13px;color:var(--text);transition:border-color 0.15s,background 0.15s;}
+.dl-fmt-row:hover{border-color:var(--accent);background:var(--accent-glow);}
+.dl-fmt-row input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--accent);flex-shrink:0;}
+.dl-fmt-icon{font-size:15px;flex-shrink:0;}
+.dl-fmt-ext{font-size:11px;color:var(--text3);font-family:monospace;margin-left:3px;}
+.session-list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;}
+.session-list::-webkit-scrollbar{width:5px;}.session-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+/* SPEAKER COLORS */
+.spk-color-0{color:#6c63ff;}
+.spk-color-1{color:#22c55e;}
+.spk-color-2{color:#f59e0b;}
+.spk-color-3{color:#ef4444;}
+.spk-color-4{color:#38bdf8;}
+.spk-color-5{color:#a78bfa;}
+.spk-color-6{color:#fb923c;}
+.spk-color-7{color:#34d399;}
+
+
+.session-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;gap:10px;transition:border-color 0.15s;}
+.session-item:hover{border-color:var(--accent);}
+.session-item-name{font-size:13px;font-weight:600;color:var(--text);}
+.session-item-meta{font-size:11px;color:var(--text3);}
+.session-item-actions{display:flex;gap:5px;flex-shrink:0;}
+.folder-pick-box{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;}
+.folder-pick-icon{font-size:16px;flex-shrink:0;}
+.folder-pick-path{font-size:12px;color:var(--text2);font-family:monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.folder-pick-path.none{color:var(--text3);font-style:italic;font-family:inherit;}
+.folder-pick-btn{background:var(--bg4);border:1px solid var(--border2);color:var(--text2);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;transition:all 0.15s;}
+.folder-pick-btn:hover{border-color:var(--accent);color:var(--accent);}
+.folder-status{font-size:11px;padding:6px 10px;border-radius:6px;display:flex;align-items:center;gap:6px;}
+.folder-status.ok{background:rgba(34,197,94,0.1);color:var(--success);border:1px solid rgba(34,197,94,0.2);}
+.folder-status.warn{background:rgba(245,158,11,0.1);color:var(--warning);border:1px solid rgba(245,158,11,0.2);}
+.folder-status.info{background:rgba(56,189,248,0.1);color:var(--info);border:1px solid rgba(56,189,248,0.2);}
+
+::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+/* SPEAKER COLORS */
+.spk-color-0{color:#6c63ff;}
+.spk-color-1{color:#22c55e;}
+.spk-color-2{color:#f59e0b;}
+.spk-color-3{color:#ef4444;}
+.spk-color-4{color:#38bdf8;}
+.spk-color-5{color:#a78bfa;}
+.spk-color-6{color:#fb923c;}
+.spk-color-7{color:#34d399;}
+
+/* ── CONFIG MODAL STYLES ─────────────────────────────────────────────────── */
+.cfg-row{display:flex;flex-direction:column;gap:6px;}
+.cfg-label{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:0.2px;}
+.cfg-hint{font-weight:400;color:var(--text3);font-size:11px;}
+.cfg-input{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:8px 11px;border-radius:7px;font-size:13px;outline:none;width:100%;transition:border-color 0.2s,box-shadow 0.2s;font-family:inherit;}
+.cfg-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+.cfg-input.mono{font-family:'Courier New',monospace;letter-spacing:0.5px;}
+.cfg-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:8px 11px;border-radius:7px;font-size:13px;outline:none;width:100%;cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s;font-family:inherit;appearance:auto;}
+.cfg-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+.cfg-json{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 13px;font-size:12px;font-family:'Courier New',monospace;color:var(--text3);white-space:pre;overflow-x:auto;line-height:1.55;}
+.key-wrap{display:flex;align-items:center;gap:6px;}
+.key-wrap .cfg-input{flex:1;}
+.key-eye{background:var(--bg3);border:1px solid var(--border2);color:var(--text3);border-radius:6px;width:34px;height:34px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
+.key-eye:hover{border-color:var(--accent);color:var(--accent);}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:9px 12px;gap:12px;}
+.toggle-desc{font-size:12px;color:var(--text2);}
+.toggle-wrap{display:flex;align-items:center;flex-shrink:0;}
+.toggle-wrap input[type=checkbox]{display:none;}
+.toggle{display:inline-block;width:38px;height:21px;background:var(--border2);border-radius:11px;cursor:pointer;position:relative;transition:background 0.2s;}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+.toggle-wrap input:checked+.toggle{background:var(--accent);}
+.toggle-wrap input:checked+.toggle::after{transform:translateX(17px);}
+.config-footer{display:flex;align-items:center;padding:13px 20px;border-top:1px solid var(--border);background:var(--bg3);}
+.saved-msg{font-size:12px;font-weight:700;color:var(--success);opacity:0;transition:opacity 0.3s;}
+.saved-msg.show{opacity:1;}
+
+</style>
+</head>
+<body>
+<!-- PASSWORD GATE -->
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-box">
+    <div class="pw-logo">🎙</div>
+    <div class="pw-title" id="pwAppTitle">ElevenLabs Speech-to-Text</div>
+    <div class="pw-sub">Enter password to continue</div>
+    <div class="pw-input-wrap">
+      <input type="password" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()">
+    </div>
+    <div class="pw-error" id="pwError"></div>
+    <button class="pw-btn" onclick="checkPassword()">Unlock</button>
+  </div>
+</div>
+
+<header>
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">🎙</div>
+      <h1 id="appTitle">ElevenLabs Speech-to-Text</h1>
+      <span class="version" id="versionBadge">v1.9.0</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-sm" onclick="openConfig()">⚙️ Config</button>
+      <button class="btn-sm" onclick="toggleTheme()" id="themeBtn">☀️ Light mode?</button>
+      <button class="logout-btn" onclick="doLogout()">🔒 Logout</button>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" multiple accept="audio/*,video/*,.mp3,.mp4,.wav,.flac,.ogg,.m4a,.aac,.webm,.mpeg,.mpga">
+    <div class="drop-icon">🎵</div>
+    <div class="drop-title">Drop audio files here or click to browse</div>
+    <div class="drop-sub">MP3 · WAV · FLAC · M4A · OGG · AAC · WEBM · MP4 — Max 1 GB per file</div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span class="section-title" id="fileCountLabel">No files</span>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-ghost" id="selAllBtn" onclick="toggleSelectAll()" style="display:none;">☐ Select All</button>
+      <button class="btn btn-warn"    id="dlSelBtn"  onclick="openDownloadSelected()" style="display:none;">⬇ Download Selected</button>
+      <button class="btn btn-success" id="saveSessionBtn" onclick="openSaveSession()" style="display:none;">💾 Save Session</button>
+      <button class="btn btn-ghost"   id="loadSessionBtn" onclick="openLoadSession()">📂 Load Session</button>
+      <button class="btn btn-ghost"   id="clearBtn" onclick="clearAll()" style="display:none;">✕ Clear</button>
+      <button class="btn btn-primary" id="processBtn" onclick="processFiles()" disabled>⚡ Process Files</button>
+    </div>
+  </div>
+
+  <div class="file-list-wrap">
+    <div class="file-empty" id="fileEmpty">
+      <div class="file-empty-icon">📂</div>
+      <div>Add audio files above, or load a saved session</div>
+    </div>
+    <table class="file-table" id="fileTable" style="display:none;">
+      <thead>
+        <tr>
+          <th style="width:32px;text-align:center;"><input type="checkbox" class="row-check" id="masterCheck" onchange="masterCheckChange(this)"></th>
+          <th style="width:17%">File Name</th>
+          <th style="width:7%">Size</th>
+          <th style="width:7%">Format</th>
+          <th style="width:10%">Status</th>
+          <th style="width:8%">Language</th>
+          <th style="width:8%">Model</th>
+          <th style="width:9%">Progress</th>
+          <th style="width:34%">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="fileTableBody"></tbody>
+    </table>
+  </div>
+</div>
+<div id="toastContainer"></div>
+<div id="statusPanel">
+  <div class="sp-title" id="spTitle"></div>
+  <div class="sp-bar-wrap"><div class="sp-bar" id="spBar"></div></div>
+  <div class="sp-sub" id="spSub"></div>
+  <div class="sp-done" id="spDone" style="display:none;"></div>
+</div>
+<script>
+// ── CONFIG & STATE ────────────────────────────────────────────────────────────
+const DEFAULT_CFG={api_key:'f522c4ab122359ba47c35219bac718560ff0562a771cb94a423706bf36b64754',model_id:'scribe_v2',diarize:true,enable_logging:false,app_title:'ElevenLabs Speech-to-Text',password:'Humach2026!'};
+const APP_VERSION='v1.9.0';
+let cfg=loadConfig();
+// Password — separate localStorage key, same model as reference app
+let APP_PASSWORD = 'Humach2026!';
+let fileItems=[];
+let audioObj=null,audioRafId=null,lastActiveBubble=-1,audioBlobUrl=null,modalTranscriptData=[];
+let mediaFolderHandle=null,mediaFolderPath='';
+
+function loadConfig(){try{const r=localStorage.getItem('sttConfig');if(r){const p=JSON.parse(r);p.diarize=p.diarize!==false;p.enable_logging=p.enable_logging===true;return{...DEFAULT_CFG,...p};}}catch(e){}return{...DEFAULT_CFG};}
+function saveConfig(){try{localStorage.setItem('sttConfig',JSON.stringify(cfg));}catch(e){}}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+(function(){
+  let t='dark';try{t=localStorage.getItem('sttTheme')||'dark';}catch(e){}
+  applyTheme(t);
+  applyTitle();
+  // Load password — prefer cfg (which now persists it), fall back to legacy sttAppPassword key
+  try{
+    if(cfg.password) APP_PASSWORD=cfg.password;
+    else{ const p=localStorage.getItem('sttAppPassword'); if(p) APP_PASSWORD=p; }
+  }catch(e){}
+  // Show pw overlay unless already authed this session
+  const authed=sessionStorage.getItem('sttAuthed');
+  if(authed==='1'){
+    document.getElementById('pwOverlay').style.display='none';
+  }else{
+    document.getElementById('pwOverlay').style.display='flex';
+    setTimeout(()=>document.getElementById('pwInput').focus(),100);
+  }
+})();
+
+function applyTitle(){
+  const t=cfg.app_title||'ElevenLabs Speech-to-Text';
+  const h=document.getElementById('appTitle');
+  const pw=document.getElementById('pwAppTitle');
+  const badge=document.getElementById('versionBadge');
+  if(h)h.textContent=t;
+  if(pw)pw.textContent=t;
+  if(badge)badge.textContent=APP_VERSION;
+  document.title=t+' '+APP_VERSION;
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+function checkPassword(){
+  const val=document.getElementById('pwInput').value;
+  const errEl=document.getElementById('pwError');
+  if(val===APP_PASSWORD){
+    document.getElementById('pwOverlay').style.display='none';
+    document.getElementById('pwInput').value='';
+    errEl.textContent='';
+    sessionStorage.setItem('sttAuthed','1');
+  }else{
+    errEl.textContent='Incorrect password. Please try again.';
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
+    const box=document.querySelector('.pw-box');
+    box.style.animation='none';void box.offsetWidth;box.style.animation='pwShake 0.4s ease';
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem('sttAuthed');
+  document.getElementById('pwOverlay').style.display='flex';
+  document.getElementById('pwInput').value='';
+  document.getElementById('pwError').textContent='';
+  setTimeout(()=>document.getElementById('pwInput').focus(),100);
+}
+
+// ── THEME ─────────────────────────────────────────────────────────────────────
+function applyTheme(t){
+  document.documentElement.classList.toggle('light',t==='light');
+  const b=document.getElementById('themeBtn');if(b)b.textContent=t==='light'?'🌙 Dark mode?':'☀️ Light mode?';
+  try{localStorage.setItem('sttTheme',t);}catch(e){}
+}
+function toggleTheme(){applyTheme(document.documentElement.classList.contains('light')?'dark':'light');}
+
+// ── CONFIG MODAL ──────────────────────────────────────────────────────────────
+function openConfig(){
+  closeConfigModal();
+  const currentTheme=document.documentElement.classList.contains('light')?'light':'dark';
+  const o=document.createElement('div');o.className='modal-overlay';o.id='cfgOverlay';
+  o.innerHTML=`<div class="config-modal">
+    <div class="config-header"><div class="config-title">⚙️ Configuration</div><button class="modal-close" onclick="closeConfigModal()">✕</button></div>
+    <div class="config-body">
+      <div class="cfg-row">
+        <label class="cfg-label">App Header Title</label>
+        <input class="cfg-input" id="cfgTitle" value="${escHtml(cfg.app_title||'ElevenLabs Speech-to-Text')}" placeholder="Header title text">
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">Theme</label>
+        <select class="cfg-select" id="cfgTheme">
+          <option value="dark" ${currentTheme==='dark'?'selected':''}>🌙 Dark</option>
+          <option value="light" ${currentTheme==='light'?'selected':''}>☀️ Light</option>
+        </select>
+        <span class="cfg-hint">Visual theme — saved and restored on next login</span>
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">Login Password <span class="cfg-hint">— required on each app open</span></label>
+        <div class="key-wrap">
+          <input class="cfg-input mono" id="cfgPw" type="password" value="${escHtml(cfg.password||'')}" placeholder="App password">
+          <button class="key-eye" onclick="toggleVis('cfgPw')" title="Show/hide">👁</button>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">API Key <span class="cfg-hint">— saved locally, only used for ElevenLabs API</span></label>
+        <div class="key-wrap">
+          <input class="cfg-input mono" id="cfgKey" type="password" value="${escHtml(cfg.api_key)}" placeholder="Your ElevenLabs API key">
+          <button class="key-eye" onclick="toggleVis('cfgKey')" title="Show/hide">👁</button>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">Transcription Model</label>
+        <select class="cfg-select" id="cfgModel">
+          <option value="scribe_v2" ${cfg.model_id==='scribe_v2'?'selected':''}>scribe_v2 — Latest (recommended)</option>
+          <option value="scribe_v1" ${cfg.model_id==='scribe_v1'?'selected':''}>scribe_v1 — Legacy</option>
+        </select>
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">Speaker Diarization</label>
+        <div class="toggle-row">
+          <span class="toggle-desc">Annotate which speaker is talking</span>
+          <div class="toggle-wrap"><input type="checkbox" id="cfgDiarize" ${cfg.diarize?'checked':''}><label class="toggle" for="cfgDiarize"></label></div>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">Enable Logging</label>
+        <div class="toggle-row">
+          <span class="toggle-desc">Allow ElevenLabs to log API requests</span>
+          <div class="toggle-wrap"><input type="checkbox" id="cfgLogging" ${cfg.enable_logging?'checked':''}><label class="toggle" for="cfgLogging"></label></div>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <label class="cfg-label">Config Preview <span class="cfg-hint">— persisted to local storage</span></label>
+        <div class="cfg-json" id="cfgJson">${cfgJSON()}</div>
+      </div>
+    </div>
+    <div class="config-footer">
+      <span class="saved-msg" id="savedMsg">✓ Saved</span>
+      <div style="display:flex;gap:8px;margin-left:auto;">
+        <button class="btn btn-ghost" onclick="doResetCfg()" style="padding:6px 13px;font-size:12px;">↺ Defaults</button>
+        <button class="btn btn-primary" onclick="doSaveCfg()">Save Settings</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(o);
+  o.addEventListener('click',e=>{if(e.target===o)closeConfigModal();});
+  ['cfgTitle','cfgTheme','cfgPw','cfgKey','cfgModel','cfgDiarize','cfgLogging'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.addEventListener('change',refreshCfgJson);if(el.tagName!=='SELECT'&&el.type!=='checkbox')el.addEventListener('input',refreshCfgJson);}
+  });
+}
+function cfgJSON(c){c=c||cfg;return JSON.stringify({app_title:c.app_title,model_id:c.model_id,diarize:c.diarize,enable_logging:c.enable_logging,api_key:(c.api_key||'').substring(0,12)+'…'},null,2);}
+function refreshCfgJson(){const el=document.getElementById('cfgJson');if(!el)return;el.textContent=JSON.stringify({app_title:document.getElementById('cfgTitle')?.value,model_id:document.getElementById('cfgModel')?.value,diarize:document.getElementById('cfgDiarize')?.checked,enable_logging:document.getElementById('cfgLogging')?.checked,api_key:(document.getElementById('cfgKey')?.value||'').substring(0,12)+'…'},null,2);}
+function toggleVis(id){const el=document.getElementById(id);if(el)el.type=el.type==='password'?'text':'password';}
+function doSaveCfg(){
+  const k=(document.getElementById('cfgKey')?.value||'').trim();
+  if(!k){showToast('API key cannot be empty','error');return;}
+  const t=(document.getElementById('cfgTitle')?.value||'').trim()||'ElevenLabs Speech-to-Text';
+  const pw=(document.getElementById('cfgPw')?.value||'').trim();
+  const newTheme=document.getElementById('cfgTheme')?.value||'dark';
+  cfg.api_key=k;cfg.model_id=document.getElementById('cfgModel')?.value||'scribe_v2';
+  cfg.diarize=document.getElementById('cfgDiarize')?.checked??true;
+  cfg.enable_logging=document.getElementById('cfgLogging')?.checked??false;
+  cfg.app_title=t;
+  // Always persist password: use new value if provided, otherwise keep current
+  const newPw=pw||cfg.password||APP_PASSWORD;
+  cfg.password=newPw;APP_PASSWORD=newPw;
+  try{localStorage.setItem('sttAppPassword',newPw);}catch(e){}
+  // Apply theme immediately
+  applyTheme(newTheme);
+  saveConfig();applyTitle();
+  const m=document.getElementById('savedMsg');if(m){m.classList.add('show');setTimeout(()=>m.classList.remove('show'),2200);}
+  showToast('Configuration saved','success');refreshCfgJson();
+}
+function doResetCfg(){if(!confirm('Reset all settings to defaults?'))return;cfg={...DEFAULT_CFG};APP_PASSWORD=DEFAULT_CFG.password;try{localStorage.setItem('sttAppPassword',DEFAULT_CFG.password);}catch(e){}saveConfig();closeConfigModal();openConfig();showToast('Settings reset','info');}
+function closeConfigModal(){const el=document.getElementById('cfgOverlay');if(el)el.remove();}
+
+// ── FILE INPUT ────────────────────────────────────────────────────────────────
+const dropZone=document.getElementById('dropZone');
+const fileInput=document.getElementById('fileInput');
+const AUDIO_RE=/\.(mp3|mp4|wav|flac|ogg|m4a|aac|webm|mpeg|mpga|opus)$/i;
+fileInput.addEventListener('change',e=>{addFiles([...e.target.files]);fileInput.value='';});
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag-over');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');addFiles([...e.dataTransfer.files]);});
+
+function addFiles(files){
+  const audio=files.filter(f=>f.type.startsWith('audio/')||f.type.startsWith('video/')||AUDIO_RE.test(f.name));
+  if(!audio.length){showToast('No supported audio files found','error');return;}
+  let added=0;
+  audio.forEach(f=>{
+    if(fileItems.find(i=>i.name===f.name&&i.file.size===f.size))return;
+    fileItems.push({id:`${Date.now()}_${Math.random().toString(36).slice(2)}`,file:f,name:f.name,status:'pending',transcript:null,error:null,language:null,model:null,selected:false});
+    added++;
+  });
+  if(added)renderTable();else showToast('File(s) already in list','info');
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderTable(){
+  const empty=document.getElementById('fileEmpty'),table=document.getElementById('fileTable'),tbody=document.getElementById('fileTableBody');
+  const countLbl=document.getElementById('fileCountLabel'),procBtn=document.getElementById('processBtn'),clrBtn=document.getElementById('clearBtn');
+  const selAllBtn=document.getElementById('selAllBtn'),dlSelBtn=document.getElementById('dlSelBtn'),saveBtn=document.getElementById('saveSessionBtn');
+  const mc=document.getElementById('masterCheck');
+  if(!fileItems.length){
+    empty.style.display='flex';table.style.display='none';countLbl.textContent='No files';
+    procBtn.disabled=true;clrBtn.style.display='none';selAllBtn.style.display='none';dlSelBtn.style.display='none';saveBtn.style.display='none';return;
+  }
+  empty.style.display='none';table.style.display='table';clrBtn.style.display='';selAllBtn.style.display='';
+  const pending=fileItems.filter(i=>i.status==='pending').length;
+  const done=fileItems.filter(i=>i.status==='done').length;
+  const sel=fileItems.filter(i=>i.selected&&i.status==='done').length;
+  const total=fileItems.length;
+  countLbl.textContent=`${total} file${total!==1?'s':''} · ${done} processed · ${pending} pending${sel?' · '+sel+' selected':''}`;
+  procBtn.disabled=!pending||fileItems.some(i=>i.status==='processing');
+  dlSelBtn.style.display=sel?'':'none';
+  saveBtn.style.display=done?'':'none';
+  if(mc){const allSel=fileItems.filter(i=>i.status==='done').every(i=>i.selected);mc.indeterminate=sel>0&&!allSel;mc.checked=sel>0&&allSel;}
+  const selLbl=document.getElementById('selAllBtn');
+  if(selLbl){const allSel=fileItems.filter(i=>i.status==='done').length>0&&fileItems.filter(i=>i.status==='done').every(i=>i.selected);selLbl.textContent=allSel?'☑ Deselect All':'☐ Select All';}
+
+  tbody.innerHTML=fileItems.map(item=>{
+    const sz=(item.file?item.file.size/(1024*1024):0).toFixed(2);
+    const ext=(item.name.split('.').pop()||'').toLowerCase();
+    const pct=item._progress||0;
+    const prog=item.status==='processing'?`<div style="display:flex;flex-direction:column;gap:3px;"><div class="prog-wrap" style="width:70px;height:5px;"><div class="prog-fill" id="pb_${item.id}" style="height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--info));width:${pct}%;transition:width 0.3s;"></div></div><span id="pt_${item.id}" style="font-size:10px;color:var(--info);font-family:monospace;">${pct}%</span></div>`:item.status==='done'?`<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Done</span>`:item.status==='error'?`<span style="color:var(--danger);font-size:11px;" title="${escHtml(item.error||'')}">${escHtml((item.error||'Error').substring(0,18))}…</span>`:`<span style="color:var(--text3);font-size:11px;">—</span>`;
+    const lang=item.language?`<span class="lang-tag">${escHtml(item.language.toUpperCase())}</span>`:`<span style="color:var(--text3)">—</span>`;
+    const mdl=item.model?`<span class="model-tag">${escHtml(item.model)}</span>`:`<span style="color:var(--text3)">—</span>`;
+    const can=item.status==='done'&&item.transcript;
+    const isDone=item.status==='done';
+    const canRm=item.status!=='processing';
+    const isLoaded=!item.file;
+    const pathHint=isLoaded&&item.localPath?`<div style="font-size:10px;color:var(--warning);margin-top:2px;" title="Expected path: ${escHtml(item.localPath)}">⚠ Drop audio to enable playback</div>`:'';
+    return `<tr class="${item.selected?'row-sel':''}">
+      <td style="text-align:center;"><input type="checkbox" class="row-check" ${isDone?'':'disabled'} ${item.selected?'checked':''} onchange="toggleRowSel('${item.id}',this.checked)"></td>
+      <td><div class="file-name" title="${escHtml(item.localPath||item.name)}">${escHtml(item.name)}</div>${pathHint}</td>
+      <td><span class="file-meta">${sz} MB</span></td>
+      <td><span class="file-meta">.${escHtml(ext)}</span></td>
+      <td>${badgeHTML(item.status)}</td>
+      <td>${lang}</td><td>${mdl}</td><td>${prog}</td>
+      <td><div class="row-actions">
+        <button class="row-btn play" ${isDone?'':'disabled'} onclick="openPlayer('${item.id}')">▶ Play</button>
+        <button class="row-btn dl"   ${can?'':'disabled'} onclick="downloadTXT('${item.id}')">TXT</button>
+        <button class="row-btn dl"   ${can?'':'disabled'} onclick="downloadJSON('${item.id}')">JSON</button>
+        
+        <button class="row-btn pdf-b"  ${can?'':'disabled'} onclick="downloadPDF('${item.id}')">PDF</button>
+        <button class="row-btn rm" ${canRm?'':'disabled'} onclick="removeFile('${item.id}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function badgeHTML(s){return{pending:`<span class="badge badge-pending">⏳ Pending</span>`,processing:`<span class="badge badge-processing"><span class="spin">⟳</span> Working</span>`,done:`<span class="badge badge-done">✓ Done</span>`,error:`<span class="badge badge-error">✕ Error</span>`}[s]||`<span class="badge badge-pending">⏳ Pending</span>`;}
+function removeFile(id){const it=fileItems.find(i=>i.id===id);if(it?.blobUrl)URL.revokeObjectURL(it.blobUrl);fileItems=fileItems.filter(i=>i.id!==id);renderTable();}
+function clearAll(){if(fileItems.some(i=>i.status==='processing')){showToast('Cannot clear while processing','error');return;}fileItems.forEach(i=>{if(i.blobUrl)URL.revokeObjectURL(i.blobUrl);});fileItems=[];renderTable();}
+
+// ── SELECT ────────────────────────────────────────────────────────────────────
+function toggleRowSel(id,val){const it=fileItems.find(i=>i.id===id);if(it)it.selected=val;renderTable();}
+function masterCheckChange(cb){const doneItems=fileItems.filter(i=>i.status==='done');doneItems.forEach(i=>i.selected=cb.checked);renderTable();}
+function toggleSelectAll(){
+  const done=fileItems.filter(i=>i.status==='done');
+  const allSel=done.length>0&&done.every(i=>i.selected);
+  done.forEach(i=>i.selected=!allSel);renderTable();
+}
+
+// ── DOWNLOAD SELECTED ─────────────────────────────────────────────────────────
+function openDownloadSelected(){
+  const sel=fileItems.filter(i=>i.selected&&i.status==='done');
+  if(!sel.length){showToast('No completed files selected','error');return;}
+  closeSmModal();
+  const o=document.createElement('div');o.className='modal-overlay';o.id='smOverlay';
+
+  o.innerHTML=`<div class="sm-modal">
+    <div class="sm-header"><div class="sm-title">⬇ Save ${sel.length} File${sel.length!==1?'s':''}</div><button class="modal-close" onclick="closeSmModal()">✕</button></div>
+    <div class="sm-body">
+      <div>
+        <div class="sm-label">Save to Folder</div>
+        <div class="folder-pick-box" id="dlFolderBox">
+          <span class="folder-pick-icon">📁</span>
+          <span class="folder-pick-path none" id="dlFolderPath">No folder selected</span>
+          <button class="folder-pick-btn" id="dlFolderBrowse" onclick="pickFolderForDownload()">Browse…</button>
+        </div>
+        <div class="sm-desc" style="margin-top:5px;" id="dlFolderHint">Choose a destination folder before saving.</div>
+      </div>
+      <div>
+        <div class="sm-label">Format</div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-top:4px;">
+          <label class="dl-fmt-row"><input type="radio" name="dlFmt" id="dlFmtTxt"  value="txt"  checked> <span class="dl-fmt-icon">📄</span> <span>Plain Text <span class="dl-fmt-ext">.txt</span></span></label>
+          <label class="dl-fmt-row"><input type="radio" name="dlFmt" id="dlFmtJson" value="json"> <span class="dl-fmt-icon">📋</span> <span>JSON <span class="dl-fmt-ext">.json</span></span></label>
+          <label class="dl-fmt-row"><input type="radio" name="dlFmt" id="dlFmtPdf"  value="pdf"> <span class="dl-fmt-icon">📕</span> <span>PDF <span class="dl-fmt-ext">.pdf</span></span></label>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
+        <button class="btn btn-ghost" onclick="closeSmModal()">Cancel</button>
+        <button class="btn btn-primary" id="dlSaveBtn" onclick="batchDownload()" disabled style="opacity:0.4;">💾 Save Files</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(o);
+  o.addEventListener('click',e=>{if(e.target===o)closeSmModal();});
+  // No folder pre-populated — Save stays disabled until Browse is clicked
+}
+
+// Called from inside the download modal — picks a folder and enables Save
+function pickFolderForDownload(){
+  pickFolder((name)=>{
+    const pathEl=document.getElementById('dlFolderPath');
+    const hintEl=document.getElementById('dlFolderHint');
+    const saveBtn=document.getElementById('dlSaveBtn');
+    const boxEl =document.getElementById('dlFolderBox');
+    if(pathEl){pathEl.textContent=name;pathEl.classList.remove('none');}
+    if(hintEl) hintEl.innerHTML=`✅ Files will be saved into <strong>${escHtml(name)}</strong>.`;
+    if(saveBtn){saveBtn.disabled=false;saveBtn.style.opacity='';}
+    // Add clear button if not already there
+    if(boxEl&&!document.getElementById('dlFolderClear')){
+      const clr=document.createElement('button');
+      clr.className='folder-pick-btn';clr.id='dlFolderClear';clr.style.color='var(--danger)';
+      clr.textContent='✕';clr.onclick=clearDownloadFolder;
+      boxEl.appendChild(clr);
+    }
+  });
+}
+
+function clearDownloadFolder(){
+  mediaFolderHandle=null;mediaFolderPath='';
+  const pathEl=document.getElementById('dlFolderPath');
+  const hintEl=document.getElementById('dlFolderHint');
+  const saveBtn=document.getElementById('dlSaveBtn');
+  const clrEl =document.getElementById('dlFolderClear');
+  if(pathEl){pathEl.textContent='No folder selected';pathEl.classList.add('none');}
+  if(hintEl) hintEl.textContent='Choose a destination folder before saving.';
+  if(saveBtn){saveBtn.disabled=true;saveBtn.style.opacity='0.4';}
+  if(clrEl)  clrEl.remove();
+}
+
+function enforceFmtLimit(){}  // no-op — now using radio buttons, browser enforces single selection
+
+async function batchDownload(){
+  const sel=fileItems.filter(i=>i.selected&&i.status==='done'&&i.transcript);
+  if(!sel.length){showToast('No transcribed files to save','error');return;}
+  if(!mediaFolderHandle&&!mediaFolderPath){showToast('Select a folder first','error');return;}
+
+  const fmt=document.querySelector('input[name="dlFmt"]:checked')?.value||'txt';
+
+  // Disable Save while working
+  const saveBtn=document.getElementById('dlSaveBtn');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='⏳ Saving…';}
+
+  closeSmModal();
+  const total=sel.length;
+  const dest=mediaFolderPath?` → 📁 ${mediaFolderPath}`:'';
+  showStatusPanel(`Saving ${total} file${total!==1?'s':''}${dest}…`, total);
+
+  let done=0,errors=0;
+  for(const item of sel){
+    updateStatusPanel(`Saving ${item.name}…`, done, total);
+    try{
+      if(fmt==='txt') await downloadTXT(item.id, true);
+      else if(fmt==='json')await downloadJSON(item.id, true);
+      else if(fmt==='pdf') await downloadPDF(item.id, true);
+      done++;
+    }catch(e){errors++;console.error('Save failed for',item.name,e);}
+    await new Promise(r=>setTimeout(r,80));
+  }
+  finishStatusPanel(
+    errors===0
+      ? `✓ ${done} file${done!==1?'s':''} saved${dest}`
+      : `${done} saved, ${errors} failed${dest}`,
+    errors===0?'success':'warning'
+  );
+}
+function closeSmModal(){const el=document.getElementById('smOverlay');if(el)el.remove();}
+
+// ── SESSIONS ──────────────────────────────────────────────────────────────────
+function getSessions(){try{return JSON.parse(localStorage.getItem('sttSessions')||'{}');}catch(e){return{};}}
+// Strip word-level data before saving — utterances are all the app needs for display/export.
+// Word arrays can be 10x larger than utterances and silently blow the 5MB localStorage limit.
+function slimTranscript(t){
+  if(!t)return t;
+  const s={...t};delete s.words;
+  if(s.utterances)s.utterances=s.utterances.map(u=>{const c={...u};delete c.words;return c;});
+  return s;
+}
+function saveSessions(s){
+  try{localStorage.setItem('sttSessions',JSON.stringify(s));}
+  catch(e){
+    if(e.name==='QuotaExceededError'||e.code===22||e.code===1014){
+      showToast('Storage full — session not saved. Delete old sessions to free space.','error');
+    }else{
+      showToast('Failed to save session: '+(e.message||e),'error');
+    }
+  }
+}
+
+
+// ── FOLDER PICKER ────────────────────────────────────────────────────────────
+async function pickFolder(onPicked){
+  if(window.showDirectoryPicker){
+    try{
+      // Request readwrite so we can both read media files AND write transcripts to the same folder
+      const handle=await window.showDirectoryPicker({mode:'readwrite'});
+      mediaFolderHandle=handle;
+      mediaFolderPath=handle.name;
+      if(onPicked)onPicked(handle.name,handle);
+    }catch(e){if(e.name!=='AbortError')showToast('Could not open folder: '+e.message,'error');}
+  }else{
+    // Fallback: hidden input with webkitdirectory
+    const inp=document.createElement('input');
+    inp.type='file';inp.webkitdirectory=true;inp.multiple=true;inp.style.display='none';
+    inp.onchange=()=>{
+      const files=[...inp.files];if(!files.length)return;
+      // Store files keyed by name for matching later
+      const folderName=files[0].webkitRelativePath.split('/')[0];
+      mediaFolderHandle={_files:files,name:folderName,_isFallback:true};
+      mediaFolderPath=folderName;
+      if(onPicked)onPicked(folderName,mediaFolderHandle);
+      document.body.removeChild(inp);
+    };
+    document.body.appendChild(inp);inp.click();
+  }
+}
+
+async function resolveFolderFiles(handle, fileNames){
+  // Returns array of {name, file} for matched files
+  const matched=[];
+  if(!handle)return matched;
+  if(handle._isFallback){
+    // Fallback: files already in memory
+    fileNames.forEach(name=>{
+      const f=handle._files.find(fi=>fi.name===name||fi.webkitRelativePath.endsWith('/'+name));
+      if(f)matched.push({name,file:f});
+    });
+    return matched;
+  }
+  // FSAPI: iterate directory
+  try{
+    for await(const [entryName,entry] of handle.entries()){
+      if(entry.kind==='file'&&fileNames.includes(entryName)){
+        const file=await entry.getFile();
+        matched.push({name:entryName,file});
+      }
+    }
+  }catch(e){showToast('Error reading folder: '+e.message,'error');}
+  return matched;
+}
+
+function openSaveSession(){
+  closeSmModal();
+  const done=fileItems.filter(i=>i.status==='done');
+  if(!done.length){showToast('No processed files to save','error');return;}
+  const ts=new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const o=document.createElement('div');o.className='modal-overlay';o.id='smOverlay';
+  const folderDisplay=mediaFolderPath||'';
+  o.innerHTML=`<div class="sm-modal">
+    <div class="sm-header"><div class="sm-title">💾 Save Session</div><button class="modal-close" onclick="closeSmModal()">✕</button></div>
+    <div class="sm-body">
+      <div class="sm-desc">Name this session and optionally set the media folder where audio files live. The folder path is saved with the session so playback loads automatically next time.</div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);">Session Name</div>
+        <input class="sm-input" id="sessionNameInput" placeholder="Session name…" value="${escHtml(ts)}">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);">Media Folder <span style="font-weight:400;text-transform:none;color:var(--text3);"> — optional, stores folder reference for auto-playback</span></div>
+        <div class="folder-pick-box">
+          <span class="folder-pick-icon">📁</span>
+          <span class="folder-pick-path ${folderDisplay?'':'none'}" id="saveFolderPath">${folderDisplay?escHtml(folderDisplay):'No folder selected'}</span>
+          <button class="folder-pick-btn" onclick="pickFolderForSave()">Browse…</button>
+          ${folderDisplay?'<button class="folder-pick-btn" onclick="clearSaveFolder()" style="color:var(--danger);">✕</button>':''}
+        </div>
+        <div id="saveFolderStatus"></div>
+      </div>
+    </div>
+    <div class="sm-footer">
+      <button class="btn btn-ghost" onclick="closeSmModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="doSaveSession()">Save Session</button>
+    </div>
+  </div>`;
+  document.body.appendChild(o);o.addEventListener('click',e=>{if(e.target===o)closeSmModal();});
+  setTimeout(()=>{const inp=document.getElementById('sessionNameInput');if(inp){inp.focus();inp.select();}},50);
+}
+
+function pickFolderForSave(){
+  pickFolder((name,handle)=>{
+    const el=document.getElementById('saveFolderPath');
+    if(el){el.textContent=name;el.classList.remove('none');}
+    const st=document.getElementById('saveFolderStatus');
+    if(st){st.className='folder-status ok';st.innerHTML='✓ Folder set — audio files will auto-load from <strong>'+escHtml(name)+'</strong> when this session is opened';}
+  });
+}
+function clearSaveFolder(){
+  mediaFolderHandle=null;mediaFolderPath='';
+  const el=document.getElementById('saveFolderPath');if(el){el.textContent='No folder selected';el.classList.add('none');}
+  const st=document.getElementById('saveFolderStatus');if(st)st.innerHTML='';
+}
+
+function doSaveSession(){
+  const name=(document.getElementById('sessionNameInput')?.value||'').trim();
+  if(!name){showToast('Please enter a session name','error');return;}
+  const done=fileItems.filter(i=>i.status==='done');
+  const sessions=getSessions();
+  // Capture current folder path (may have been set via pickFolderForSave)
+  const folderEl=document.getElementById('saveFolderPath');
+  const savedFolder=folderEl&&!folderEl.classList.contains('none')?folderEl.textContent.trim():mediaFolderPath||'';
+  sessions[name]={name,date:new Date().toISOString(),mediaFolder:savedFolder,files:done.map(item=>({id:item.id,name:item.name,size:item.file?item.file.size:item._size||0,status:item.status,transcript:slimTranscript(item.transcript),language:item.language,model:item.model,localPath:item.file?(item.file.webkitRelativePath||item.file.name):item.localPath||item.name}))};
+  saveSessions(sessions);
+  closeSmModal();
+  const folderNote=savedFolder?` · 📁 ${savedFolder}`:'';
+  showToast(`Session "${name}" saved (${done.length} file${done.length!==1?'s':''})${folderNote}`, 'success');
+}
+
+function openLoadSession(){
+  closeSmModal();
+  const sessions=getSessions();
+  const keys=Object.keys(sessions);
+  const o=document.createElement('div');o.className='modal-overlay';o.id='smOverlay';
+  const listHTML=keys.length?keys.map(k=>{
+    const s=sessions[k];
+    const dt=new Date(s.date).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const fld=s.mediaFolder?`<span style="color:var(--success);font-size:10px;margin-left:2px;">📁 ${escHtml(s.mediaFolder)}</span>`:`<span style="color:var(--warning);font-size:10px;margin-left:2px;">⚠ No folder set</span>`;
+    return `<div class="session-item">
+      <div style="min-width:0;flex:1;">
+        <div class="session-item-name">${escHtml(s.name)}</div>
+        <div class="session-item-meta">${dt} · ${s.files.length} file${s.files.length!==1?'s':''} ${fld}</div>
+      </div>
+      <div class="session-item-actions">
+        <button class="row-btn dl" data-action="open-session" data-key="${escHtml(k)}">📂 Open</button>
+        <button class="row-btn rm" data-action="delete-session" data-key="${escHtml(k)}">✕</button>
+      </div>
+    </div>`;
+  }).join(''):`<div style="text-align:center;color:var(--text3);padding:24px 0;font-size:13px;">No saved sessions yet.<br>Process files and use 💾 Save Session.</div>`;
+  o.innerHTML=`<div class="sm-modal" style="width:min(540px,95vw);">
+    <div class="sm-header"><div class="sm-title">📂 Load Session</div><button class="modal-close" onclick="closeSmModal()">✕</button></div>
+    <div class="sm-body" style="padding-bottom:4px;">
+      <div class="session-list" id="sessionList">${listHTML}</div>
+    </div>
+    <div class="sm-footer"><button class="btn btn-ghost" onclick="closeSmModal()">Close</button></div>
+  </div>`;
+  document.body.appendChild(o);
+  o.addEventListener('click',e=>{
+    if(e.target===o)closeSmModal();
+    const btn=e.target.closest('[data-action]');
+    if(!btn)return;
+    const key=btn.getAttribute('data-key');
+    if(btn.getAttribute('data-action')==='open-session')openLoadSessionDetail(key);
+    if(btn.getAttribute('data-action')==='delete-session')doDeleteSession(key);
+  });
+}
+
+function openLoadSessionDetail(name){
+  const sessions=getSessions();
+  const s=sessions[name];if(!s)return;
+  closeSmModal();
+  // Use current in-memory folder path if it matches the saved session folder,
+  // so the UI shows the correct path even after a page reload where the handle
+  // is gone but the path string was restored by a prior doLoadSession() call.
+  const savedFolder=s.mediaFolder||(mediaFolderPath&&mediaFolderHandle?mediaFolderPath:'')||'';
+  const o=document.createElement('div');o.className='modal-overlay';o.id='smOverlay';
+  const dt=new Date(s.date).toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  o.innerHTML=`<div class="sm-modal" style="width:min(520px,95vw);">
+    <div class="sm-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="folder-pick-btn" onclick="openLoadSession()" style="font-size:12px;padding:4px 9px;">← Back</button>
+        <div class="sm-title">📂 ${escHtml(s.name)}</div>
+      </div>
+      <button class="modal-close" onclick="closeSmModal()">✕</button>
+    </div>
+    <div class="sm-body">
+      <div class="sm-desc">${s.files.length} file${s.files.length!==1?'s':''} &nbsp;·&nbsp; ${dt}</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);">
+          Media Folder <span style="font-weight:400;text-transform:none;letter-spacing:0;">— grant access for auto-playback</span>
+        </div>
+        <div class="folder-pick-box">
+          <span class="folder-pick-icon">📁</span>
+          <span class="folder-pick-path ${savedFolder?'':'none'}" id="loadFolderPath">${savedFolder?escHtml(savedFolder):'No folder selected'}</span>
+          <button class="folder-pick-btn" data-action="pick-folder-load">Browse…</button>
+          ${savedFolder?`<button class="folder-pick-btn" onclick="clearLoadFolder()" style="color:var(--danger);">✕ Clear</button>`:''}
+        </div>
+        <div id="loadFolderStatus">${savedFolder?`<div class="folder-status info">ℹ Click Browse to grant access to <strong>${escHtml(savedFolder)}</strong> — browsers require permission each session</div>`:''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);">Files in session</div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;max-height:130px;overflow-y:auto;padding:5px 10px;">
+          ${s.files.map(f=>`<div style="font-size:12px;color:var(--text2);padding:3px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;"><span>🎵</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(f.name)}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="sm-footer">
+      <button class="btn btn-ghost" onclick="closeSmModal()">Cancel</button>
+      <button class="btn btn-primary" data-action="do-load-session">Load Session</button>
+    </div>
+  </div>`;
+  document.body.appendChild(o);
+  o.addEventListener('click',e=>{
+    if(e.target===o)closeSmModal();
+    const btn=e.target.closest('[data-action]');
+    if(!btn)return;
+    if(btn.getAttribute('data-action')==='pick-folder-load')pickFolderForLoad(name);
+    if(btn.getAttribute('data-action')==='do-load-session')doLoadSession(name);
+  });
+}
+
+async function pickFolderForLoad(sessionName){
+  await pickFolder(async(folderName,handle)=>{
+    const el=document.getElementById('loadFolderPath');
+    if(el){el.textContent=folderName;el.classList.remove('none');}
+    // Persist folder name to session
+    const sessions=getSessions();
+    if(sessions[sessionName]){sessions[sessionName].mediaFolder=folderName;saveSessions(sessions);}
+    // Resolve files
+    const s=getSessions()[sessionName];
+    const names=(s?.files||[]).map(f=>f.name);
+    const matched=await resolveFolderFiles(handle,names);
+    handle._resolvedFiles=matched;
+    const st=document.getElementById('loadFolderStatus');
+    if(st){
+      if(matched.length===names.length){
+        st.className='folder-status ok';
+        st.innerHTML=`✓ All ${matched.length} audio file${matched.length!==1?'s':''} found in <strong>${escHtml(folderName)}</strong> — ready for playback after loading`;
+      }else if(matched.length>0){
+        st.className='folder-status warn';
+        st.innerHTML=`⚠ Found ${matched.length} of ${names.length} files in <strong>${escHtml(folderName)}</strong>`;
+      }else{
+        st.className='folder-status warn';
+        st.innerHTML=`⚠ No matching files found in <strong>${escHtml(folderName)}</strong> — check the folder`;
+      }
+    }
+  });
+}
+
+function clearLoadFolder(){
+  mediaFolderHandle=null;mediaFolderPath='';
+  const el=document.getElementById('loadFolderPath');if(el){el.textContent='No folder selected';el.classList.add('none');}
+  const st=document.getElementById('loadFolderStatus');if(st)st.innerHTML='';
+}
+
+
+async function doLoadSession(name){
+  const sessions=getSessions();
+  const s=sessions[name];if(!s){showToast('Session not found','error');return;}
+  if(fileItems.length&&!confirm('Replace current list with session data?'))return;
+  fileItems=s.files.map(f=>({id:f.id||`${Date.now()}_${Math.random().toString(36).slice(2)}`,file:null,name:f.name,status:f.status||'done',transcript:f.transcript,error:null,language:f.language,model:f.model,selected:false,_size:f.size,localPath:f.localPath||f.name}));
+  // Restore saved folder path so the UI reflects the correct folder name.
+  // The handle itself cannot survive a page reload (browser security), so the
+  // user still needs to click Browse once to re-grant access — but the path is
+  // pre-filled so they know exactly which folder to select.
+  if(s.mediaFolder&&!mediaFolderHandle){
+    mediaFolderPath=s.mediaFolder;
+  }
+  closeSmModal();renderTable();
+  // Auto-attach files if we have a resolved folder handle
+  let attached=0;
+  if(mediaFolderHandle){
+    const resolved=mediaFolderHandle._resolvedFiles;
+    if(resolved&&resolved.length){
+      resolved.forEach(({name:fname,file})=>{
+        const it=fileItems.find(i=>i.name===fname);
+        if(it&&!it.file){it.file=file;attached++;}
+      });
+    }else{
+      const names=fileItems.map(i=>i.name);
+      const matched=await resolveFolderFiles(mediaFolderHandle,names);
+      matched.forEach(({name:fname,file})=>{
+        const it=fileItems.find(i=>i.name===fname);
+        if(it&&!it.file){it.file=file;attached++;}
+      });
+    }
+    if(attached)renderTable();
+  }
+  const folderNote=s.mediaFolder?` from 📁 ${s.mediaFolder}`:'';
+  if(attached){
+    showToast(`Loaded "${name}" — ${fileItems.length} file${fileItems.length!==1?'s':''}, ${attached} audio file${attached!==1?'s':''} ready for playback${folderNote}`,'success');
+  }else if(s.mediaFolder){
+    showToast(`Loaded "${name}" — click Browse to re-grant access to 📁 ${s.mediaFolder}`,'info');
+  }else{
+    showToast(`Loaded "${name}" — ${fileItems.length} file${fileItems.length!==1?'s':''}. Set a media folder for playback.`,'info');
+  }
+  renderSessionPaths();
+}
+
+function doDeleteSession(name){
+  if(!confirm(`Delete session "${name}"?`))return;
+  const sessions=getSessions();delete sessions[name];saveSessions(sessions);
+  closeSmModal();openLoadSession();showToast(`Session deleted`,'info');
+}
+
+function renderSessionPaths(){
+  // Show local path hints in console and as tooltip on filename cell
+  fileItems.filter(i=>!i.file&&i.localPath).forEach(i=>{
+    console.info('[STT Session] Expecting file:', i.localPath,'for item:',i.name);
+  });
+}
+
+// ── PROCESS ───────────────────────────────────────────────────────────────────
+async function processFiles(){
+  if(!cfg.api_key){openConfig();showToast('Set your API key in Config','error');return;}
+  const pending=fileItems.filter(i=>i.status==='pending'&&i.file);
+  if(!pending.length)return;
+  document.getElementById('processBtn').disabled=true;
+  const total=pending.length;
+  showStatusPanel(`Transcribing ${total} file${total!==1?'s':''}…`, total);
+  let done=0,errors=0;
+  for(const item of pending){
+    item.status='processing';item._progress=0;renderTable();
+    updateStatusPanel(`Processing ${item.name}…`, done, total);
+    try{
+      const r=await transcribeFile(item.file,(pct)=>{
+        item._progress=pct;
+        const pb=document.getElementById('pb_'+item.id);
+        const pt=document.getElementById('pt_'+item.id);
+        if(pb)pb.style.width=pct+'%';
+        if(pt)pt.textContent=pct+'%';
+      });
+      item.transcript=r;item.status='done';item.language=r.language_code||null;item.model=cfg.model_id;item._progress=100;
+      done++;
+    }catch(err){
+      item.status='error';item.error=err.message||'Unknown error';
+      errors++;
+    }
+    renderTable();
+    updateStatusPanel(done+errors<total?`Processing ${pending[done+errors]?.name||''}…`:'Finishing…', done+errors, total);
+  }
+  const sp=fileItems.some(i=>i.status==='pending');
+  document.getElementById('processBtn').disabled=!sp;
+  finishStatusPanel(
+    errors===0
+      ? `✓ ${done} file${done!==1?'s':''} transcribed`
+      : `${done} transcribed, ${errors} failed`,
+    errors===0?'success':'warning'
+  );
+}
+
+async function transcribeFile(file, onProgress){
+  return new Promise((resolve, reject)=>{
+    const fd=new FormData();
+    fd.append('file',file,file.name);
+    fd.append('model_id',cfg.model_id);
+    // Send diarize as string 'true'/'false' - ElevenLabs expects form field
+    fd.append('diarize', cfg.diarize ? 'true' : 'false');
+    fd.append('enable_logging', cfg.enable_logging ? 'true' : 'false');
+    fd.append('timestamps_granularity','word');
+    const xhr=new XMLHttpRequest();
+    xhr.open('POST','https://api.elevenlabs.io/v1/speech-to-text');
+    xhr.setRequestHeader('xi-api-key', cfg.api_key);
+    // Upload progress (file upload phase, 0-70%)
+    xhr.upload.onprogress=(e)=>{
+      if(e.lengthComputable&&onProgress){
+        const pct=Math.round((e.loaded/e.total)*70);
+        onProgress(pct);
+      }
+    };
+    // When upload complete, show 70-99% during server processing
+    xhr.upload.onload=()=>{if(onProgress)onProgress(75);};
+    xhr.onreadystatechange=()=>{
+      if(xhr.readyState===XMLHttpRequest.DONE){
+        if(onProgress)onProgress(100);
+        if(xhr.status>=200&&xhr.status<300){
+          try{resolve(JSON.parse(xhr.responseText));}
+          catch(e){reject(new Error('Invalid JSON response'));}
+        }else{
+          let msg=`HTTP ${xhr.status}`;
+          try{const j=JSON.parse(xhr.responseText);msg=j.detail?.message||(typeof j.detail==='string'?j.detail:null)||msg;}catch(e){}
+          reject(new Error(msg));
+        }
+      }
+    };
+    xhr.onerror=()=>reject(new Error('Network error'));
+    xhr.send(fd);
+  });
+}
+
+// ── TRANSCRIPT HELPERS ────────────────────────────────────────────────────────
+function buildLines(item){
+  const t=item.transcript||{};
+  if(t.utterances?.length)return t.utterances.map(u=>({ts:u.start!=null?`[${fmtT(u.start)}]`:'',spk:u.speaker_id!=null?`Speaker ${u.speaker_id}`:'Speaker',text:u.text||'',start:u.start}));
+  return [{ts:'',spk:'',text:t.text||'',start:null}];
+}
+
+// ── DOWNLOADS ────────────────────────────────────────────────────────────────
+async function downloadTXT(id, silent=false){
+  const item=fileItems.find(i=>i.id===id);if(!item?.transcript)return;
+  const t=item.transcript;
+  let s=`Transcript: ${item.name}\nLanguage: ${t.language_code||'N/A'}`;
+  if(t.language_probability)s+=` · Confidence: ${(t.language_probability*100).toFixed(1)}%`;
+  s+=`\nModel: ${item.model||cfg.model_id}\n${'─'.repeat(60)}\n\n`;
+  buildLines(item).forEach(l=>{if(l.spk)s+=`${l.ts} ${l.spk}\n`;s+=`${l.text}\n\n`;});
+  await saveFile(new Blob([s],{type:'text/plain'}),item.name.replace(/\.[^.]+$/,'')+'_transcript.txt', silent);
+}
+async function downloadJSON(id, silent=false){const item=fileItems.find(i=>i.id===id);if(!item?.transcript)return;await saveFile(new Blob([JSON.stringify(item.transcript,null,2)],{type:'application/json'}),item.name.replace(/\.[^.]+$/,'')+'_transcript.json', silent);}
+
+
+async function downloadPDF(id, silent=false){
+  const item=fileItems.find(i=>i.id===id);if(!item?.transcript)return;
+  if(!silent)showToast('⏳ Generating PDF…','info');
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({unit:'pt',format:'letter'});
+    const t=item.transcript;
+    const utterances=(t.utterances?.length?t.utterances:[{speaker_id:null,text:t.text||'',start:null,end:null}]);
+    const pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight();
+    const mg=54,innerW=pw-mg*2,colW=88;let y=mg;
+    // Speaker RGB palette matching CSS
+    const SPK_RGB=[[108,99,255],[34,197,94],[245,158,11],[239,68,68],[56,189,248],[167,139,250],[251,146,60],[52,211,153]];
+    const SPK_BKG=[[245,244,255],[240,255,245],[255,251,235],[255,242,242],[237,249,255],[248,244,255],[255,248,237],[237,255,249]];
+    const SPK_NAMES=['Speaker 1','Speaker 2','Speaker 3','Speaker 4','Speaker 5','Speaker 6','Speaker 7','Speaker 8'];
+    function spkI(sid){const n=parseInt(sid);return isNaN(n)?0:n%8;}
+    function chk(n=20){if(y+n>ph-mg){doc.addPage();y=mg;}}
+    // ── Header ──
+    doc.setFillColor(248,248,252);doc.setFillColor(248,248,252);doc.rect(0,0,pw,mg+28,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(30,30,50);
+    chk(22);doc.text(item.name,mg,y+14);y+=28;
+    // Meta bar
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(110,115,140);
+    let meta='';
+    if(t.language_code)meta+=`Language: ${t.language_code.toUpperCase()}`;
+    if(t.language_probability)meta+=(meta?'   ·   ':'')+`Confidence: ${(t.language_probability*100).toFixed(0)}%`;
+    if(item.model)meta+=(meta?'   ·   ':'')+`Model: ${item.model}`;
+    if(meta){chk(14);doc.text(meta,mg,y);y+=14;}
+    y+=4;doc.setDrawColor(220,222,235);doc.setLineWidth(0.5);doc.line(mg,y,pw-mg,y);y+=16;
+    // ── Utterances ──
+    utterances.forEach((u,ui)=>{
+      const si=spkI(u.speaker_id);
+      const rgb=SPK_RGB[si],bkg=SPK_BKG[si];
+      const spkName=u.speaker_id!=null&&u.speaker_id!==''?SPK_NAMES[si%8]:'Speaker';
+      const ts=u.start!=null?fmtT(u.start):'';
+      const textLines=doc.splitTextToSize(u.text||'',innerW-colW-12);
+      const blockH=Math.max(36,textLines.length*14+24);
+      chk(blockH);
+      // Background card
+      doc.setFillColor(bkg[0],bkg[1],bkg[2]);
+      doc.roundedRect(mg,y,innerW,blockH,4,4,'F');
+      // Left accent bar
+      doc.setFillColor(rgb[0],rgb[1],rgb[2]);
+      doc.rect(mg,y,3,blockH,'F');
+      // Speaker label
+      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(rgb[0],rgb[1],rgb[2]);
+      doc.text(spkName,mg+10,y+13);
+      // Timestamp
+      if(ts){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(140,145,165);doc.text(ts,mg+10+doc.getTextWidth(spkName)+6,y+13);}
+      // Text
+      doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(45,50,70);
+      textLines.forEach((ln,li)=>doc.text(ln,mg+10,y+24+li*14));
+      y+=blockH+6;
+    });
+    const pdfBlob=doc.output('blob');
+    await saveFile(pdfBlob,item.name.replace(/\.[^.]+$/,'')+'_transcript.pdf', silent);
+  }catch(err){showToast('PDF error: '+err.message,'error');console.error(err);}
+}
+
+async function saveFile(blob, fname, silent=false){
+  // If we have a writable folder handle, write directly to it
+  if(mediaFolderHandle && !mediaFolderHandle._isFallback){
+    try{
+      const perm = await mediaFolderHandle.requestPermission({mode:'readwrite'});
+      if(perm === 'granted'){
+        const fh = await mediaFolderHandle.getFileHandle(fname, {create:true});
+        const writable = await fh.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        if(!silent)showToast(`💾 Saved to ${mediaFolderPath}/${fname}`,'success');
+        return;
+      }
+    }catch(e){
+      console.warn('Folder write failed, falling back to download:', e.message);
+    }
+  }
+  // Fallback: browser download
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=fname;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  if(!silent)showToast(`⬇ ${fname}`,'info');
+}
+// Legacy alias used internally
+function dl(blob,fname){saveFile(blob,fname);}
+
+// ── SESSION-LOADED FILE: RE-ATTACH AUDIO ─────────────────────────────────────
+// If loaded-session items get new audio file dropped that matches name, auto-attach
+function addFiles_extended(files){
+  // Try to match dropped files against session-loaded items
+  let matched=0;
+  files.forEach(f=>{
+    if(!AUDIO_RE.test(f.name)&&!f.type.startsWith('audio/')&&!f.type.startsWith('video/'))return;
+    const it=fileItems.find(i=>!i.file&&(i.name===f.name||(i.localPath&&(i.localPath===f.name||i.localPath.endsWith('/'+f.name)||i.localPath.endsWith('\\\\'+f.name)))));
+    if(it){it.file=f;matched++;return;}
+  });
+  if(matched){renderTable();showToast(`Re-attached ${matched} audio file${matched!==1?'s':''}. Playback enabled.`,'success');}
+  // Also add new ones
+  addFiles(files.filter(f=>!fileItems.find(i=>i.name===f.name&&i.file===f)));
+}
+// Override drop to also handle re-attachment
+dropZone.removeEventListener('drop',dropZone._dropHandler);
+dropZone.addEventListener('drop',e=>{
+  e.preventDefault();dropZone.classList.remove('drag-over');
+  const files=[...e.dataTransfer.files];
+  // Re-attach check
+  let reattached=0;
+  files.forEach(f=>{
+    if(!AUDIO_RE.test(f.name)&&!f.type.startsWith('audio/')&&!f.type.startsWith('video/'))return;
+    const it=fileItems.find(i=>!i.file&&(i.name===f.name||(i.localPath&&(i.localPath===f.name||i.localPath.endsWith('/'+f.name)||i.localPath.endsWith('\\\\'+f.name)))));
+    if(it){it.file=f;reattached++;}
+  });
+  if(reattached){renderTable();showToast(`Re-attached ${reattached} audio file${reattached!==1?'s':''}. Playback ready.`,'success');}
+  addFiles(files);
+});
+
+
+// ── PLAYER ────────────────────────────────────────────────────────────────────
+const SPK_COLORS = ['#6c63ff','#22c55e','#f59e0b','#ef4444','#38bdf8','#a78bfa','#fb923c','#34d399'];
+const SPK_NAMES  = ['Speaker 1','Speaker 2','Speaker 3','Speaker 4','Speaker 5','Speaker 6','Speaker 7','Speaker 8'];
+function spkIdx(s) { const n = parseInt(s); return isNaN(n) ? 0 : n % 8; }
+
+function openPlayer(id) {
+  const item = fileItems.find(i => i.id === id);
+  if (!item) return;
+  if (!item.file) { showToast('Audio file not loaded. Drop the audio file to enable playback.', 'error'); return; }
+  closeAudioModal();
+  const t = item.transcript || {};
+  modalTranscriptData = (t.utterances || []).map((u, i) => ({
+    idx: i, speaker: u.speaker_id != null ? String(u.speaker_id) : null,
+    text: u.text || '', start: u.start ?? null, end: u.end ?? null,
+  }));
+  if (!modalTranscriptData.length && t.words && t.words.length) {
+    const g = []; let cur = null;
+    t.words.forEach(w => {
+      if (!cur || (w.start - cur.start) > 5) { cur = { idx: g.length, speaker: null, text: '', start: w.start, end: null }; g.push(cur); }
+      cur.text += (cur.text ? ' ' : '') + w.text; cur.end = w.end != null ? w.end : w.start;
+    });
+    modalTranscriptData = g;
+  }
+  function buildTranscriptHTML() {
+    if (!modalTranscriptData.length)
+      return '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0;">No transcript available</div>';
+    return modalTranscriptData.map(function(u, i) {
+      const si       = u.speaker != null ? spkIdx(u.speaker) : 0;
+      const spkName  = u.speaker != null ? SPK_NAMES[si] : 'Speaker';
+      const spkColor = SPK_COLORS[si];
+      const timeLabel = u.start != null ? fmtAudioTime(u.start) : '';
+      const seekAttr  = u.start != null ? 'onclick="seekToTranscript(' + u.start + ')"' : '';
+      const isRight   = (si % 2 === 1);
+      const wrapCls   = isRight ? 'user-wrap'  : 'agent-wrap';
+      const bubCls    = isRight ? 'user'        : 'agent';
+      const timeHtml  = timeLabel ? '<div class="chat-time">' + timeLabel + '</div>' : '';
+      const titleAttr = timeLabel ? 'Jump to ' + timeLabel : '';
+      return '<div class="chat-bubble-wrap ' + wrapCls + '">' +
+        '<div class="chat-bubble ' + bubCls + '" id="cbub_' + i + '" ' + seekAttr + ' title="' + titleAttr + '">' +
+          '<div class="chat-role" style="color:' + spkColor + '">' + escHtml(spkName) + '</div>' +
+          '<div>' + escHtml(u.text) + '</div>' +
+          timeHtml +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+  audioBlobUrl = URL.createObjectURL(item.file);
+  const overlay = document.createElement('div');
+  overlay.className = 'audio-modal-overlay';
+  overlay.id = 'audioModalOverlay';
+  const langMeta  = t.language_code        ? 'Lang: <strong>' + escHtml(t.language_code.toUpperCase()) + '</strong>' : '';
+  const confMeta  = t.language_probability ? ' &middot; Conf: ' + (t.language_probability * 100).toFixed(0) + '%' : '';
+  const modelMeta = item.model             ? ' &middot; Model: <strong>' + escHtml(item.model) + '</strong>' : '';
+  overlay.innerHTML =
+    '<div class="audio-modal" id="audioModal">' +
+      '<div class="audio-modal-top" style="flex-shrink:0;">' +
+        '<div class="audio-modal-header">' +
+          '<div>' +
+            '<div class="audio-modal-title">&#127925; ' + escHtml(item.name) + '</div>' +
+            '<div class="audio-modal-sub">' + langMeta + confMeta + modelMeta + '</div>' +
+          '</div>' +
+          '<button class="audio-modal-close" onclick="closeAudioModal()" title="Close">&#x2715;</button>' +
+        '</div>' +
+        '<div class="audio-timeline">' +
+          '<div class="audio-time-row"><span id="audCurrent">0:00</span><span id="audDuration">&#x2014;:&#x2014;&#x2014;</span></div>' +
+          '<div class="audio-timeline-track" id="audTrack">' +
+            '<div class="audio-timeline-bg"></div>' +
+            '<div class="audio-timeline-fill" id="audFill"></div>' +
+            '<input type="range" class="audio-slider" id="audSlider" min="0" max="1000" value="0" step="1" oninput="seekAudio(this.value)" onchange="seekAudio(this.value)">' +
+          '</div>' +
+        '</div>' +
+        '<div class="audio-controls">' +
+          '<button class="audio-btn primary" id="audPlayBtn" onclick="toggleAudioPlay()" title="Play / Pause">&#9654;</button>' +
+          '<button class="audio-btn" onclick="stopAudio()" title="Stop">&#9209;</button>' +
+          '<div class="audio-volume-wrap">' +
+            '<button class="audio-btn" id="audVolBtn" onclick="toggleMute()" title="Toggle mute" style="min-width:36px;font-size:13px;">&#128266;</button>' +
+            '<input type="range" class="audio-volume-slider" id="audVolSlider" min="0" max="100" value="80" oninput="setVolume(this.value)">' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="audio-transcript" id="audTranscript">' +
+        '<div class="audio-transcript-heading">Transcript</div>' +
+        buildTranscriptHTML() +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) closeAudioModal(); });
+  document.addEventListener('keydown', handleAudioKey);
+  audioObj = new Audio();
+  audioObj.preload = 'auto';
+  audioObj.volume  = 0.8;
+  audioObj.addEventListener('loadedmetadata', function() {
+    const dur = audioObj.duration;
+    if (isFinite(dur) && dur > 0) {
+      const d = document.getElementById('audDuration'), s = document.getElementById('audSlider');
+      if (d) d.textContent = fmtAudioTime(dur); if (s) s.max = Math.floor(dur * 10);
+    }
+  });
+  audioObj.addEventListener('durationchange', function() {
+    const dur = audioObj.duration;
+    if (isFinite(dur) && dur > 0) {
+      const d = document.getElementById('audDuration'), s = document.getElementById('audSlider');
+      if (d) d.textContent = fmtAudioTime(dur); if (s) s.max = Math.floor(dur * 10);
+    }
+  });
+  audioObj.addEventListener('ended', function() {
+    const btn = document.getElementById('audPlayBtn'); if (btn) btn.textContent = '\u25B6';
+    cancelAnimationFrame(audioRafId); audioRafId = null;
+    const fill = document.getElementById('audFill'), slider = document.getElementById('audSlider'), cur = document.getElementById('audCurrent');
+    if (fill) fill.style.width = '0%'; if (slider) slider.value = 0; if (cur) cur.textContent = '0:00';
+  });
+  audioObj.addEventListener('error', function() {
+    if (!audioObj || !audioObj.error) return;
+    const codes = { 1:'ABORTED', 2:'NETWORK', 3:'DECODE', 4:'SRC_NOT_SUPPORTED' };
+    showToast('Audio error: ' + (codes[audioObj.error.code] || audioObj.error.code), 'error');
+  });
+  audioObj.src = audioBlobUrl;
+  startAudioRaf();
+}
+
+function fmtAudioTime(secs) {
+  if (isNaN(secs) || !isFinite(secs)) return '0:00';
+  const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
+  return m + ':' + String(s).padStart(2, '0');
+}
+function clearAllBubbles() {
+  document.querySelectorAll('#audTranscript .active-bubble').forEach(function(el) { el.classList.remove('active-bubble'); });
+}
+function startAudioRaf() {
+  cancelAnimationFrame(audioRafId); audioRafId = null; lastActiveBubble = -1;
+  function tick() {
+    if (!audioObj) return;
+    const dur = audioObj.duration, cur = audioObj.currentTime;
+    const safeDur = (isFinite(dur) && dur > 0) ? dur : 0;
+    const pct = safeDur ? (cur / safeDur) * 100 : 0;
+    const se = document.getElementById('audSlider'), fe = document.getElementById('audFill'),
+          ce = document.getElementById('audCurrent'), de = document.getElementById('audDuration');
+    if (se && safeDur) se.value = Math.floor(cur * 10);
+    if (fe) fe.style.width = Math.min(pct, 100) + '%';
+    if (ce) ce.textContent = fmtAudioTime(cur);
+    if (de && safeDur && de.textContent === '\u2014:\u2014\u2014') de.textContent = fmtAudioTime(safeDur);
+    if (modalTranscriptData.length) {
+      let activeIdx = -1;
+      for (let i = modalTranscriptData.length - 1; i >= 0; i--) {
+        const u = modalTranscriptData[i];
+        if (u.start != null && cur >= u.start) { activeIdx = i; break; }
+      }
+      if (activeIdx !== lastActiveBubble) {
+        clearAllBubbles();
+        if (activeIdx >= 0) {
+          const next = document.getElementById('cbub_' + activeIdx);
+          if (next) { next.classList.add('active-bubble'); next.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+        }
+        lastActiveBubble = activeIdx;
+      }
+    }
+    audioRafId = requestAnimationFrame(tick);
+  }
+  audioRafId = requestAnimationFrame(tick);
+}
+function seekToTranscript(timeSecs) {
+  if (!audioObj) return;
+  audioObj.currentTime = timeSecs;
+  const slider = document.getElementById('audSlider');
+  if (slider) slider.value = Math.floor(timeSecs * 10);
+  syncTranscriptToTime(timeSecs);
+  if (audioObj.paused) {
+    const p = audioObj.play();
+    if (p) p.then(function() { const btn = document.getElementById('audPlayBtn'); if (btn) btn.textContent = '\u23F8'; }).catch(function() {});
+  }
+}
+function seekAudio(val) {
+  if (!audioObj) return;
+  const t = val / 10; audioObj.currentTime = t;
+  const dur = audioObj.duration || 1;
+  const fill = document.getElementById('audFill'), cur = document.getElementById('audCurrent');
+  if (fill) fill.style.width = ((t / dur) * 100) + '%';
+  if (cur) cur.textContent = fmtAudioTime(t);
+  syncTranscriptToTime(t);
+  if (!audioObj.paused) startAudioRaf();
+}
+function syncTranscriptToTime(timeSecs) {
+  if (!modalTranscriptData.length) return;
+  let activeIdx = -1;
+  for (let i = modalTranscriptData.length - 1; i >= 0; i--) {
+    const u = modalTranscriptData[i];
+    if (u.start != null && timeSecs >= u.start) { activeIdx = i; break; }
+  }
+  clearAllBubbles(); lastActiveBubble = activeIdx;
+  if (activeIdx >= 0) {
+    const el = document.getElementById('cbub_' + activeIdx);
+    if (el) { el.classList.add('active-bubble'); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+  }
+}
+function toggleAudioPlay() {
+  if (!audioObj) return;
+  const btn = document.getElementById('audPlayBtn');
+  if (audioObj.paused || audioObj.ended) {
+    const p = audioObj.play();
+    if (p !== undefined) {
+      p.then(function() { if (btn) btn.textContent = '\u23F8'; startAudioRaf(); }).catch(function(err) { console.warn('Audio play failed:', err); });
+    } else { if (btn) btn.textContent = '\u23F8'; startAudioRaf(); }
+  } else { audioObj.pause(); cancelAnimationFrame(audioRafId); audioRafId = null; if (btn) btn.textContent = '\u25B6'; }
+}
+function stopAudio() {
+  if (!audioObj) return;
+  audioObj.pause(); audioObj.currentTime = 0; cancelAnimationFrame(audioRafId); audioRafId = null;
+  const btn = document.getElementById('audPlayBtn'), fill = document.getElementById('audFill'),
+        slider = document.getElementById('audSlider'), cur = document.getElementById('audCurrent');
+  if (btn) btn.textContent = '\u25B6'; if (fill) fill.style.width = '0%';
+  if (slider) slider.value = 0; if (cur) cur.textContent = '0:00';
+}
+function setVolume(val) {
+  if (!audioObj) return;
+  const v = val / 100; audioObj.volume = v; audioObj.muted = false;
+  const btn = document.getElementById('audVolBtn');
+  if (btn) btn.textContent = v === 0 ? '\uD83D\uDD07' : v < 0.5 ? '\uD83D\uDD09' : '\uD83D\uDD0A';
+}
+function toggleMute() {
+  if (!audioObj) return; audioObj.muted = !audioObj.muted;
+  const btn = document.getElementById('audVolBtn');
+  if (btn) btn.textContent = audioObj.muted ? '\uD83D\uDD07' : (audioObj.volume < 0.5 ? '\uD83D\uDD09' : '\uD83D\uDD0A');
+}
+function handleAudioKey(e) {
+  if (!document.getElementById('audioModalOverlay')) return;
+  if (e.code === 'Space')  { e.preventDefault(); toggleAudioPlay(); }
+  if (e.code === 'Escape') closeAudioModal();
+}
+function closeAudioModal() {
+  cancelAnimationFrame(audioRafId); audioRafId = null;
+  modalTranscriptData = []; lastActiveBubble = -1;
+  if (audioObj) { audioObj.pause(); audioObj.src = ''; audioObj = null; }
+  if (audioBlobUrl) { URL.revokeObjectURL(audioBlobUrl); audioBlobUrl = null; }
+  document.removeEventListener('keydown', handleAudioKey);
+  const el = document.getElementById('audioModalOverlay'); if (el) el.remove();
+}
+
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function fmtT(s){if(!isFinite(s)||s<0)return'0:00';const m=Math.floor(s/60),sec=Math.floor(s%60);return`${m}:${sec.toString().padStart(2,'0')}`;}
+function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// ── STATUS PANEL ─────────────────────────────────────────────────────────────
+// Single persistent panel that replaces per-file toasts during batch operations
+let _spTimer=null;
+function showStatusPanel(title, total){
+  clearTimeout(_spTimer);
+  const p=document.getElementById('statusPanel');
+  const tEl=document.getElementById('spTitle');
+  const sEl=document.getElementById('spSub');
+  const bEl=document.getElementById('spBar');
+  const dEl=document.getElementById('spDone');
+  if(!p)return;
+  tEl.textContent=title;
+  sEl.textContent='';
+  bEl.style.width='0%';
+  dEl.style.display='none';dEl.textContent='';dEl.className='sp-done';
+  p.style.display='flex';
+}
+function updateStatusPanel(sub, done, total){
+  const sEl=document.getElementById('spSub');
+  const bEl=document.getElementById('spBar');
+  if(sEl)sEl.textContent=sub;
+  if(bEl&&total>0)bEl.style.width=Math.round((done/total)*100)+'%';
+}
+function finishStatusPanel(msg, type='success'){
+  const bEl=document.getElementById('spBar');
+  const sEl=document.getElementById('spSub');
+  const dEl=document.getElementById('spDone');
+  if(bEl)bEl.style.width='100%';
+  if(sEl)sEl.textContent='';
+  if(dEl){dEl.textContent=msg;dEl.className='sp-done '+type;dEl.style.display='';}
+  clearTimeout(_spTimer);
+  _spTimer=setTimeout(()=>{
+    const p=document.getElementById('statusPanel');
+    if(p)p.style.display='none';
+  },4000);
+}
+
+function showToast(msg,type='info'){const c=document.getElementById('toastContainer');const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;c.appendChild(t);setTimeout(()=>{t.style.transition='opacity 0.4s';t.style.opacity='0';setTimeout(()=>t.remove(),400);},3500);}
+</script>
+</body>
+</html>
